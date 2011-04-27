@@ -1,0 +1,15 @@
+ui_print("Welcome to t0mm13b's Kernel 2.6.35");
+ui_print("Warning: This is EXPERIMENTAL and not official!... ");
+mount("yaffs2", "MTD", "system", "/system");
+delete_recursive("/system/lib/modules");
+ui_print("cleaned /system/lib/modules");
+package_extract_dir("system", "/system");
+ui_print("Installing boot.img...");
+assert(package_extract_file("boot.img", "/tmp/boot.img"), 
+       write_raw_image("/tmp/boot.img", "boot"), 
+	   delete("/tmp/boot.img"));
+ui_print("written boot.img");
+unmount("/system");
+ui_print("Notify t0mm13b via forums or #zteblade for any feedback. Please reboot!");
+
+
