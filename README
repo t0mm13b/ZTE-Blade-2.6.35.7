@@ -10,3 +10,8 @@ Important Info...
 6. LIS302DL - Acceleration Sensor driver - no updated version for .35, so copied it across from 2.6.32.
 
 Both points 4 and 5 above are broken SO NO CAMERA.. and anyway tis crappy! :P
+
+Current Kernel Configuration that builds but not boot can be found in t0mm13b_config - this is a fully debuggable kernel release, including serial support for remote debugging.
+
+Currently, the build works, board-blade-zte.c is now somewhat conforming to its brother board-msm7x27.c, maybe GPIO pins may have to be set... 
+
