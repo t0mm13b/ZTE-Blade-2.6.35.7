@@ -1,1 +1,1 @@
-/home/t0mm13b/CAF/ZTE-Blade-2.6.35/include/asm-arm/mach-types.h
+../../../../include/asm-arm/mach-types.h

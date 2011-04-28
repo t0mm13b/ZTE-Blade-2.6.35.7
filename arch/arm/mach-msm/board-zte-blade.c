@@ -2892,8 +2892,8 @@ static void __init msm7x2x_init(void)
 	zte_ftm_set_value(g_zte_ftm_flag_fixup);
 #endif
 
-	if (socinfo_init() < 0)
-		BUG();
+/*.	if (socinfo_init() < 0)
+		BUG();*/
 #ifdef CONFIG_ARCH_MSM7X25
 	msm_clock_init(msm_clocks_7x25, msm_num_clocks_7x25);
 #elif CONFIG_ARCH_MSM7X27
@@ -2901,7 +2901,7 @@ static void __init msm7x2x_init(void)
 #endif
 	/* platform_add_devices(early_devices, ARRAY_SIZE(early_devices)); */
 	platform_add_devices(devices, ARRAY_SIZE(devices));
-
+	/*sdcc_gpio_init();*/
 #if defined(CONFIG_MSM_SERIAL_DEBUGGER)
 	msm_serial_debug_init(MSM_UART3_PHYS, INT_UART3,
 			&msm_device_uart3.dev, 1);
