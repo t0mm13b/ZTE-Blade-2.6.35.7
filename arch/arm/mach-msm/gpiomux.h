@@ -174,7 +174,7 @@ static inline int msm_gpiomux_put(unsigned gpio)
 
 static inline int msm_gpiomux_write(unsigned gpio,
 	enum msm_gpiomux_setting which, struct gpiomux_setting *setting,
-	struct gpiomux_setting *old_setting);
+	struct gpiomux_setting *old_setting)
 {
 	return -ENOSYS;
 }

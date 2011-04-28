@@ -330,11 +330,6 @@ config SENSORS_AKM8973
 	help
 	 AKM8973 Compass Driver implemented by HTC.
 
-config SENSORS_AK8973
-    depends on SENSORS_AKM8973
-	help
-	  AK8973 Compass Driver, based on AKM8973 to maintain compatibility with ZTE Blade device.
-
 config SENSORS_AKM8976
 	tristate "AKM8976 Compass Driver"
 	depends on I2C
