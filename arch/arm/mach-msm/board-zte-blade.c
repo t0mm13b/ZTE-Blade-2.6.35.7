@@ -109,11 +109,7 @@
 #endif
 
 static smem_global *global;
-
-
-#ifdef CONFIG_ZTE_PLATFORM
 static int g_zte_ftm_flag_fixup;
-#endif
 
 
 
@@ -148,7 +144,8 @@ static struct platform_device mass_storage_device = {
 		.platform_data          = &usb_mass_storage_pdata,
 	},
 };
-#endif
+#endif /* CONFIG_USB_FUNCTION */
+
 #ifdef CONFIG_USB_ANDROID
 static char *usb_functions_default[] = {
 	"diag",
@@ -179,22 +176,28 @@ static char *usb_functions_rndis_adb[] = {
 static char *usb_functions_all[] = {
 #ifdef CONFIG_USB_ANDROID_RNDIS
 	"rndis",
-#endif
+#endif /* CONFIG_USB_ANDROID_RNDIS */
+
 #ifdef CONFIG_USB_ANDROID_DIAG
 	"diag",
-#endif
+#endif /* CONFIG_USB_ANDROID_DIAG */
+
 	"adb",
+
 #ifdef CONFIG_USB_F_SERIAL
 	"modem",
 	"nmea",
-#endif
+#endif /* CONFIG_USB_F_SERIAL */
+
 #ifdef CONFIG_USB_ANDROID_RMNET
 	"rmnet",
-#endif
+#endif /* CONFIG_USB_ANDROID_RMNET */
+
 	"usb_mass_storage",
+
 #ifdef CONFIG_USB_ANDROID_ACM
 	"acm",
-#endif
+#endif /* CONFIG_USB_ANDROID_ACM */
 };
 
 static struct android_usb_product usb_products[] = {
@@ -251,7 +254,6 @@ static struct platform_device rndis_device = {
 };
 
 static struct android_usb_platform_data android_usb_pdata = {
-#ifdef CONFIG_ZTE_PLATFORM
 	.vendor_id	= 0x19d2,
 	.version	= 0x0100,
 	.product_name	= "ZTE HSUSB Device",
@@ -261,18 +263,6 @@ static struct android_usb_platform_data android_usb_pdata = {
 	.num_functions = ARRAY_SIZE(usb_functions_all),
 	.functions = usb_functions_all,
 	.serial_number = "1234567890ABCDEF",
-	#else
-	.vendor_id	= 0x05C6,
-	.product_id	= 0x9026,
-	.version	= 0x0100,
-	.product_name		= "Qualcomm HSUSB Device",
-	.manufacturer_name	= "Qualcomm Incorporated",
-	.num_products = ARRAY_SIZE(usb_products),
-	.products = usb_products,
-	.num_functions = ARRAY_SIZE(usb_functions_all),
-	.functions = usb_functions_all,
-	.serial_number = "1234567890ABCDEF",
-#endif
 };
 
 static struct platform_device android_usb_device = {
@@ -301,7 +291,7 @@ static int __init board_serialno_setup(char *serialno)
 	return 1;
 }
 __setup("androidboot.serialno=", board_serialno_setup);
-#endif
+#endif /* CONFIG_USB_ANDROID */
 
 static struct platform_device smc91x_device = {
 	.name		= "smc91x",
@@ -373,7 +363,7 @@ static struct usb_composition usb_func_composition[] = {
 		/* DIAG + ADB + RMNET */
 		.functions	    = 0x43,
 	},
-#endif
+#endif /* CONFIG_USB_FUNCTION_RMNET */
 
 };
 
@@ -390,7 +380,7 @@ static struct msm_hsusb_platform_data msm_hsusb_pdata = {
 	.num_functions	= ARRAY_SIZE(usb_functions_map),
 	.config_gpio    = NULL,
 };
-#endif
+#endif /* CONFIG_USB_FUNCTION */
 
 #ifdef CONFIG_USB_EHCI_MSM
 static void msm_hsusb_vbus_power(unsigned phy_info, int on)
@@ -412,7 +402,7 @@ static void __init msm7x2x_init_host(void)
 
 	msm_add_host(0, &msm_usb_host_pdata);
 }
-#endif
+#endif /* CONFIG_USB_EHCI_MSM */
 
 #ifdef CONFIG_USB_MSM_OTG_72K
 static int hsusb_rpc_connect(int connect)
@@ -422,7 +412,7 @@ static int hsusb_rpc_connect(int connect)
 	else
 		return msm_hsusb_rpc_close();
 }
-#endif
+#endif /* CONFIG_USB_MSM_OTG_72K */
 
 #ifdef CONFIG_USB_MSM_OTG_72K
 static struct vreg *vreg_3p3;
@@ -472,9 +462,11 @@ static struct msm_otg_platform_data msm_otg_pdata = {
 	.chg_vbus_draw		 = hsusb_chg_vbus_draw,
 	.chg_connected		 = hsusb_chg_connected,
 	.chg_init		 = hsusb_chg_init,
+
 #ifdef CONFIG_USB_EHCI_MSM
 	.vbus_power = msm_hsusb_vbus_power,
-#endif
+#endif /* CONFIG_USB_EHCI_MSM */
+
 	.ldo_init		= msm_hsusb_ldo_init,
 	.pclk_required_during_lpm = 1,
 	.pclk_src_name		= "ebi1_usb_clk",
@@ -482,8 +474,9 @@ static struct msm_otg_platform_data msm_otg_pdata = {
 
 #ifdef CONFIG_USB_GADGET
 static struct msm_hsusb_gadget_platform_data msm_gadget_pdata;
-#endif
-#endif
+#endif /* CONFIG_USB_GADGET */
+
+#endif /* CONFIG_USB_MSM_OTG_72K */
 
 #define SND(desc, num) { .name = #desc, .id = num }
 static struct snd_endpoint snd_endpoints_list[] = {
@@ -533,7 +526,7 @@ static struct platform_device msm_device_snd = {
 #define DEC3_FORMAT ((1<<MSM_ADSP_CODEC_WAV)|(1<<MSM_ADSP_CODEC_ADPCM)| \
 	(1<<MSM_ADSP_CODEC_YADPCM)|(1<<MSM_ADSP_CODEC_QCELP))
 #define DEC4_FORMAT (1<<MSM_ADSP_CODEC_MIDI)
-#endif
+#endif /* CONFIG_ARCH_MSM7X25 */
 
 static unsigned int dec_concurrency_table[] = {
 	/* Audio LP */
@@ -689,20 +682,11 @@ static struct platform_device hs_device = {
 #define LCDC_API_VERS             0x00010001
 
 
-#ifdef CONFIG_ZTE_PLATFORM 
-
 #define GPIO_LCD_RESET_OUT 	    91
 #define GPIO_LCD_SPI_CS_OUT    	122
 #define GPIO_LCD_SPI_SDO_OUT 	123
 #define GPIO_LCD_SPI_SCLK_OUT 	124 
 #define GPIO_LCD_SPI_SDI_IN 	132
-#else
-#define GPIO_OUT_132    132
-#define GPIO_OUT_131    131
-#define GPIO_OUT_103    103
-#define GPIO_OUT_102    102
-#define GPIO_OUT_88     88
-#endif
 
 static struct msm_rpc_endpoint *lcdc_ep;
 
@@ -736,7 +720,6 @@ static int msm_fb_lcdc_config(int on)
 }
 
 
-#ifdef CONFIG_ZTE_PLATFORM 
 static int gpio_array_num[] = {
 				GPIO_LCD_SPI_SCLK_OUT, 
 				GPIO_LCD_SPI_CS_OUT, 
@@ -765,37 +748,6 @@ static uint32_t lcdc_gpio_table[] = {
 	GPIO_CFG(GPIO_LCD_SPI_SDI_IN, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA),
 	GPIO_CFG(GPIO_LCD_SPI_SDO_OUT, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
 	GPIO_CFG(GPIO_LCD_RESET_OUT,  0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), };
-#else
-static int gpio_array_num[] = {
-				GPIO_OUT_132, 
-				GPIO_OUT_131, 
-				GPIO_OUT_103, 
-				GPIO_OUT_102, 
-				GPIO_OUT_88
-				};
-
-static void lcdc_gordon_gpio_init(void)
-{
-	if (gpio_request(GPIO_OUT_132, "spi_clk"))
-		pr_err("failed to request gpio spi_clk\n");
-	if (gpio_request(GPIO_OUT_131, "spi_cs"))
-		pr_err("failed to request gpio spi_cs\n");
-	if (gpio_request(GPIO_OUT_103, "spi_sdi"))
-		pr_err("failed to request gpio spi_sdi\n");
-	if (gpio_request(GPIO_OUT_102, "spi_sdoi"))
-		pr_err("failed to request gpio spi_sdoi\n");
-	if (gpio_request(GPIO_OUT_88, "gpio_dac"))
-		pr_err("failed to request gpio_dac\n");
-}
-
-static uint32_t lcdc_gpio_table[] = {
-	GPIO_CFG(GPIO_OUT_132, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(GPIO_OUT_131, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(GPIO_OUT_103, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(GPIO_OUT_102, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-	GPIO_CFG(GPIO_OUT_88,  0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA),
-};
-#endif
 
 static void config_lcdc_gpio_table(uint32_t *table, int len, unsigned enable)
 {
@@ -812,11 +764,7 @@ static void config_lcdc_gpio_table(uint32_t *table, int len, unsigned enable)
 }
 
 
-#ifdef CONFIG_ZTE_PLATFORM
 static void lcdc_lead_config_gpios(int enable)
-#else
-static void lcdc_gordon_config_gpios(int enable)
-#endif
 {
 	config_lcdc_gpio_table(lcdc_gpio_table,
 		ARRAY_SIZE(lcdc_gpio_table), enable);
@@ -852,20 +800,6 @@ static int msm_fb_lcdc_power_save(int on)
 				if (!rc)
 					rc = tmp;
 			}
-			/*
-			tmp = gpio_tlmm_config(GPIO_CFG(GPIO_LCD_RESET_OUT, 0,
-						GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL,
-						GPIO_CFG_2MA), GPIO_CFG_ENABLE);
-			if (tmp) {
-				printk(KERN_ERR "gpio_tlmm_config failed\n");
-				if (!rc)
-					rc = tmp;
-			}
-			gpio_set_value(91, 0);
-			mdelay(15);
-			gpio_set_value(91, 1);
-			mdelay(15);
-			*/
 		}
 	}
 
@@ -885,7 +819,6 @@ static struct lcdc_platform_data lcdc_pdata = {
 };
 
 
-#ifdef CONFIG_ZTE_PLATFORM
 static struct msm_panel_common_pdata lcdc_qvga_panel_data = {
 	.panel_config_gpio = lcdc_lead_config_gpios,
 	.gpio_num          = gpio_array_num,
@@ -898,20 +831,6 @@ static struct platform_device lcdc_qvga_panel_device = {
 		.platform_data = &lcdc_qvga_panel_data,
 	}
 };
-#else
-static struct msm_panel_common_pdata lcdc_gordon_panel_data = {
-	.panel_config_gpio = lcdc_gordon_config_gpios,
-	.gpio_num          = gpio_array_num,
-};
-
-static struct platform_device lcdc_gordon_panel_device = {
-	.name   = "lcdc_gordon_vga",
-	.id     = 0,
-	.dev    = {
-		.platform_data = &lcdc_gordon_panel_data,
-	}
-};
-#endif
 
 static struct resource msm_fb_resources[] = {
 	{
@@ -1119,7 +1038,7 @@ static struct platform_device msm_device_kgsl = {
 		.platform_data = &kgsl_pdata,
 	},
 };
-#endif
+#endif /* CONFIG_ARCH_MSM7X27 */
 
 static struct platform_device msm_device_pmic_leds = {
 	.name   = "pmic-leds-status",
@@ -1181,32 +1100,37 @@ static struct i2c_board_info i2c_devices[] = {
 	{
 		I2C_BOARD_INFO("mt9d112", 0x78 >> 1),
 	},
-#endif
+#endif /* CONFIG_MT9D112 */
+
 #ifdef CONFIG_S5K3E2FX
 	{
 		I2C_BOARD_INFO("s5k3e2fx", 0x20 >> 1),
 	},
-#endif
+#endif /* CONFIG_S5K3E2FX */
+
 #ifdef CONFIG_MT9P012
 	{
 		I2C_BOARD_INFO("mt9p012", 0x6C >> 1),
 	},
-#endif
+#endif /* CONFIG_MT9P012 */
+
 #ifdef CONFIG_MT9P012_KM
 	{
 		I2C_BOARD_INFO("mt9p012_km", 0x6C >> 2),
 	},
-#endif
+#endif /* CONFIG_MT9P012_KM */
+
 #if defined(CONFIG_MT9T013) || defined(CONFIG_SENSORS_MT9T013)
 	{
 		I2C_BOARD_INFO("mt9t013", 0x6C),
 	},
-#endif
+#endif /* defined(CONFIG_MT9T013) || defined(CONFIG_SENSORS_MT9T013) */
+
 #ifdef CONFIG_VB6801
 	{
 		I2C_BOARD_INFO("vb6801", 0x20),
 	},
-#endif
+#endif /* CONFIG_VB6801 */
 
 #ifdef CONFIG_MT9P111
     /*
@@ -1218,7 +1142,7 @@ static struct i2c_board_info i2c_devices[] = {
     {
         I2C_BOARD_INFO("mt9p111", 0x7A >> 1),
     },
-#endif
+#endif /* CONFIG_MT9P111 */
 
 #ifdef CONFIG_MT9T11X
     
@@ -1229,21 +1153,19 @@ static struct i2c_board_info i2c_devices[] = {
 #else
     //Do nothing
 #endif
-#endif
+#endif /* CONFIG_MT9T11X */
 
 #ifdef CONFIG_MT9D115
-    
     {
         I2C_BOARD_INFO("mt9d115", 0x78 >> 1),
     },
-#endif
+#endif /* CONFIG_MT9D115 */
 
 #ifdef CONFIG_MT9V113
-    
     {
         I2C_BOARD_INFO("mt9v113", 0x78 >> 1),
     },
-#endif
+#endif /* CONFIG_MT9V113 */
 
 #ifdef CONFIG_OV5642
     
@@ -1254,24 +1176,25 @@ static struct i2c_board_info i2c_devices[] = {
 #else
     //Do nothing
 #endif
-#endif
+#endif /* CONFIG_OV5642 */
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI
-{
+	{
 		.type         = "synaptics-rmi-ts",
 		/*.flags        = ,*/
 		.addr         = 0x22,
 		.irq          = MSM_GPIO_TO_INT(29),
 	},
-	#endif
-	#ifdef CONFIG_TOUCHSCREEN_CYPRESS_I2C_RMI
+#endif /* CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI */
+
+#ifdef CONFIG_TOUCHSCREEN_CYPRESS_I2C_RMI
 	{
 		.type         = "cypress_touch",
 		/*.flags        = ,*/
 		.addr         = 0x0a,
 		.irq          = MSM_GPIO_TO_INT(29),
 	},
-	#endif
+#endif /* CONFIG_TOUCHSCREEN_CYPRESS_I2C_RMI */
 
 };
 
@@ -1312,25 +1235,6 @@ static struct platform_device aux2_i2c_gpio_device = {
 
 #ifdef CONFIG_MSM_CAMERA
 static uint32_t camera_off_gpio_table[] = {
-	 
-#if 0 
-    GPIO_CFG(0,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT0 */
-    GPIO_CFG(1,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT1 */
-    GPIO_CFG(2,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT2 */
-    GPIO_CFG(3,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT3 */
-    GPIO_CFG(4,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT4 */
-    GPIO_CFG(5,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT5 */
-    GPIO_CFG(6,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT6 */
-    GPIO_CFG(7,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT7 */
-    GPIO_CFG(8,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT8 */
-    GPIO_CFG(9,  0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT9 */
-    GPIO_CFG(10, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT10 */
-    GPIO_CFG(11, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT11 */
-    GPIO_CFG(12, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* PCLK */
-    GPIO_CFG(13, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* HSYNC_IN */
-    GPIO_CFG(14, 0, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* VSYNC_IN */
-    GPIO_CFG(15, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA), /* MCLK */
-#else
     GPIO_CFG(4,  0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* CIF_DATA <0> */
     GPIO_CFG(5,  0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* CIF_DATA <1> */
     GPIO_CFG(6,  0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* CIF_DATA <2> */
@@ -1343,17 +1247,9 @@ static uint32_t camera_off_gpio_table[] = {
     GPIO_CFG(13, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* CIF_HSYNC */
     GPIO_CFG(14, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* CIF_VSYNC */
     GPIO_CFG(15, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA),  /* CIF_MCLK */
-#endif
 };
 
 static uint32_t camera_on_gpio_table[] = {
-	
-#if 0
-    GPIO_CFG(0,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT0 */
-    GPIO_CFG(1,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT1 */
-    GPIO_CFG(2,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT2 */
-    GPIO_CFG(3,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT3 */
-#endif
     GPIO_CFG(4,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT4 */
     GPIO_CFG(5,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT5 */
     GPIO_CFG(6,  1, GPIO_CFG_INPUT, GPIO_CFG_PULL_DOWN, GPIO_CFG_2MA), /* DAT6 */
@@ -1854,7 +1750,7 @@ static struct platform_device msm_camera_sensor_mt9d112 = {
 		.platform_data = &msm_camera_sensor_mt9d112_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9D112 */
 
 #ifdef CONFIG_S5K3E2FX
 static struct msm_camera_sensor_flash_data flash_s5k3e2fx = {
@@ -1878,7 +1774,7 @@ static struct platform_device msm_camera_sensor_s5k3e2fx = {
 		.platform_data = &msm_camera_sensor_s5k3e2fx_data,
 	},
 };
-#endif
+#endif /* CONFIG_S5K3E2FX */
 
 #ifdef CONFIG_MT9P012
 static struct msm_camera_sensor_flash_data flash_mt9p012 = {
@@ -1902,7 +1798,7 @@ static struct platform_device msm_camera_sensor_mt9p012 = {
 		.platform_data = &msm_camera_sensor_mt9p012_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9P012 */
 
 #ifdef CONFIG_MT9P012_KM
 static struct msm_camera_sensor_flash_data flash_mt9p012_km = {
@@ -1926,7 +1822,7 @@ static struct platform_device msm_camera_sensor_mt9p012_km = {
 		.platform_data = &msm_camera_sensor_mt9p012_km_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9P012_KM */
 
 #ifdef CONFIG_MT9T013
 static struct msm_camera_sensor_flash_data flash_mt9t013 = {
@@ -1950,7 +1846,7 @@ static struct platform_device msm_camera_sensor_mt9t013 = {
 		.platform_data = &msm_camera_sensor_mt9t013_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9T013 */
 
 #ifdef CONFIG_VB6801
 static struct msm_camera_sensor_flash_data flash_vb6801 = {
@@ -1974,9 +1870,9 @@ static struct platform_device msm_camera_sensor_vb6801 = {
 		.platform_data = &msm_camera_sensor_vb6801_data,
 	},
 };
-#endif
-#ifdef CONFIG_MT9P111
+#endif /* CONFIG_VB6801 */
 
+#ifdef CONFIG_MT9P111
 static struct msm_camera_sensor_flash_data flash_mt9p111 = {
 	.flash_type = MSM_CAMERA_FLASH_NONE,
 	.flash_src  = &msm_flash_src
@@ -1998,10 +1894,9 @@ static struct platform_device msm_camera_sensor_mt9p111 = {
 		.platform_data = &msm_camera_sensor_mt9p111_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9P111 */
 
 #ifdef CONFIG_MT9T11X
-
 static struct msm_camera_sensor_flash_data flash_mt9t11x = {
 	.flash_type = MSM_CAMERA_FLASH_NONE,
 	.flash_src  = &msm_flash_src
@@ -2023,10 +1918,9 @@ static struct platform_device msm_camera_sensor_mt9t11x = {
 		.platform_data = &msm_camera_sensor_mt9t11x_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9T11X */
 
 #ifdef CONFIG_MT9D115
-
 static struct msm_camera_sensor_flash_data flash_mt9d115 = {
     .flash_type = MSM_CAMERA_FLASH_NONE,
     .flash_src  = &msm_flash_src
@@ -2048,11 +1942,9 @@ static struct platform_device msm_camera_sensor_mt9d115 = {
         .platform_data = &msm_camera_sensor_mt9d115_data,
     },
 };
-#endif
+#endif /* CONFIG_MT9D115 */
 
 #ifdef CONFIG_MT9V113
-
- 
 static struct msm_camera_sensor_flash_data flash_mt9v113 = {
 	.flash_type = MSM_CAMERA_FLASH_NONE,
 	.flash_src  = &msm_flash_src
@@ -2074,10 +1966,9 @@ static struct platform_device msm_camera_sensor_mt9v113 = {
 		.platform_data = &msm_camera_sensor_mt9v113_data,
 	},
 };
-#endif
+#endif /* CONFIG_MT9V113 */
 
 #ifdef CONFIG_OV5642
-
 static struct msm_camera_sensor_flash_data flash_ov5642 = {
 	.flash_type = MSM_CAMERA_FLASH_NONE,
 	.flash_src  = &msm_flash_src
@@ -2099,9 +1990,8 @@ static struct platform_device msm_camera_sensor_ov5642 = {
 		.platform_data = &msm_camera_sensor_ov5642_data,
 	},
 };
-#endif
-
-#endif
+#endif /* CONFIG_OV5642 */
+#endif /* CONFIG_MSM_CAMERA */
 
 #if defined( CONFIG_TOUCHSCREEN_MSM_LEGACY)
 struct msm_ts_platform_data msm_tssc_pdata ={
@@ -2119,36 +2009,10 @@ struct msm_ts_platform_data msm_tssc_pdata = {
 	.max_press =255,
 	.inv_y = 955,
 };
-#endif
+#endif /* defined(CONFIG_TOUCHSCREEN_MSM_LEGACY) */
 
 
 
-#if 0
-static u32 msm_calculate_batt_capacity(u32 current_voltage);
-
-static struct msm_psy_batt_pdata msm_psy_batt_data = {
-	.voltage_min_design 	= 2800,
-	.voltage_max_design	= 4300,
-	.avail_chg_sources   	= AC_CHG | USB_CHG ,
-	.batt_technology        = POWER_SUPPLY_TECHNOLOGY_LION,
-	.calculate_capacity	= &msm_calculate_batt_capacity,
-};
-
-static u32 msm_calculate_batt_capacity(u32 current_voltage)
-{
-	u32 low_voltage   = msm_psy_batt_data.voltage_min_design;
-	u32 high_voltage  = msm_psy_batt_data.voltage_max_design;
-
-	return (current_voltage - low_voltage) * 100
-		/ (high_voltage - low_voltage);
-}
-
-static struct platform_device msm_batt_device = {
-	.name 		    = "msm-battery",
-	.id		    = -1,
-	.dev.platform_data  = &msm_psy_batt_data,
-};
-#else
 static u32 msm_calculate_batt_capacity(u32 current_voltage);
 
 typedef struct 
@@ -2216,8 +2080,6 @@ static struct platform_device msm_batt_device = {
 	.dev.platform_data  = &msm_psy_batt_data,
 };
 
-#endif
-
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 static struct resource ram_console_resource[] = {
 	{
@@ -2233,7 +2095,7 @@ static struct platform_device ram_console_device = {
 	.num_resources  = ARRAY_SIZE(ram_console_resource),
 	.resource       = ram_console_resource,
 };
-#endif
+#endif /* CONFIG_ANDROID_RAM_CONSOLE */
 
 
 static struct platform_device msm_wlan_ar6000_pm_device = {
@@ -2275,102 +2137,105 @@ static struct platform_device *devices[] __initdata = {
 
 #ifdef CONFIG_USB_MSM_OTG_72K
 	&msm_device_otg,
+
 #ifdef CONFIG_USB_GADGET
 	&msm_device_gadget_peripheral,
 #endif
-#endif
+
+#endif /* CONFIG_USB_MSM_OTG_72K */
 
 #ifdef CONFIG_USB_FUNCTION
 	&msm_device_hsusb_peripheral,
 	&mass_storage_device,
-#endif
+#endif /* CONFIG_USB_FUNCTION */
 
 #ifdef CONFIG_USB_ANDROID
 	&usb_mass_storage_device,
 	&rndis_device,
 #ifdef CONFIG_USB_ANDROID_DIAG
 	&usb_diag_device,
-#endif
+#endif /* CONFIG_USB_ANDROID_DIAG */
 	&android_usb_device,
-#endif
+#endif /* CONFIG_USB_ANDROID */
+
 	&msm_device_i2c,
 	&aux_i2c_gpio_device,  
 	&aux2_i2c_gpio_device,  
 	&smc91x_device,
+
 #if defined( CONFIG_TOUCHSCREEN_MSM_LEGACY) || defined( CONFIG_TOUCHSCREEN_MSM)
 	&msm_device_tssc,
-#endif
+#endif /* defined( CONFIG_TOUCHSCREEN_MSM_LEGACY) || defined( CONFIG_TOUCHSCREEN_MSM) */
 
 	&android_pmem_kernel_ebi1_device,
 	&android_pmem_device,
 	&android_pmem_adsp_device,
 	&android_pmem_audio_device,
 	&msm_fb_device,
-#ifdef CONFIG_ZTE_PLATFORM
 	&lcdc_qvga_panel_device,
-#else
-	&lcdc_gordon_panel_device,
-#endif
 	&msm_device_uart_dm1,
 #ifdef CONFIG_BT
 	&msm_bt_power_device,
-#endif
+#endif /* CONFIG_BT */
 	&msm_device_pmic_leds,
 	&android_leds, 
 	&msm_device_snd,
 	&msm_device_adspdec,
+
 #ifdef CONFIG_MT9T013
 	&msm_camera_sensor_mt9t013,
-#endif
+#endif /* CONFIG_MT9T013 */
+
 #ifdef CONFIG_MT9D112
 	&msm_camera_sensor_mt9d112,
-#endif
+#endif /* CONFIG_MT9D112 */
+
 #ifdef CONFIG_S5K3E2FX
 	&msm_camera_sensor_s5k3e2fx,
-#endif
+#endif /* CONFIG_S5K3E2FX */
+
 #ifdef CONFIG_MT9P012
 	&msm_camera_sensor_mt9p012,
-#endif
+#endif /* CONFIG_MT9P012 */
+
 #ifdef CONFIG_MT9P012_KM
 	&msm_camera_sensor_mt9p012_km,
-#endif
+#endif /* CONFIG_MT9P012_KM */
+	 
 #ifdef CONFIG_VB6801
 	&msm_camera_sensor_vb6801,
-#endif
+#endif /* CONFIG_VB6801 */
+	
 	&msm_bluesleep_device,
 #ifdef CONFIG_ARCH_MSM7X27
 	&msm_device_kgsl,
-#endif
-#ifdef CONFIG_MT9P111
+#endif /* CONFIG_ARCH_MSM7X27 */
 
+#ifdef CONFIG_MT9P111
     &msm_camera_sensor_mt9p111,
-#endif
+#endif /* CONFIG_MT9P111 */
 
 #ifdef CONFIG_MT9T11X
-    
     &msm_camera_sensor_mt9t11x,
-#endif
+#endif /* CONFIG_MT9T11X */
 
 #ifdef CONFIG_MT9D115
- 
     &msm_camera_sensor_mt9d115,
-#endif
+#endif /* CONFIG_MT9D115 */
 
 #ifdef CONFIG_MT9V113
-
     &msm_camera_sensor_mt9v113,
-#endif
+#endif /* CONFIG_MT9V113 */
 
 #ifdef CONFIG_OV5642
-
     &msm_camera_sensor_ov5642,
-#endif
+#endif /* CONFIG_OV5642 */
 
 	&hs_device,
 	&msm_batt_device,
 #ifdef CONFIG_ANDROID_RAM_CONSOLE
 	&ram_console_device,
-#endif
+#endif /* CONFIG_ANDROID_RAM_CONSOLE */
 };
 
 static struct msm_panel_common_pdata mdp_pdata = {
@@ -2629,27 +2494,30 @@ static struct mmc_platform_data msm7x2x_sdc1_data = {
 	.nonremovable	= 0,
 #ifdef CONFIG_MMC_MSM_SDC1_DUMMY52_REQUIRED
 	.dummy52_required = 1,
-#endif
+#endif /* CONFIG_MMC_MSM_SDC1_DUMMY52_REQUIRED */
 };
-#endif
+#endif /* CONFIG_MMC_MSM_SDC1_SUPPORT */
 
 #ifdef CONFIG_MMC_MSM_SDC2_SUPPORT
 static struct mmc_platform_data msm7x2x_sdc2_data = {
 	.ocr_mask	= MMC_VDD_28_29,
 	.translate_vdd	= msm_sdcc_setup_power,
 	.mmc_bus_width  = MMC_CAP_4_BIT_DATA,
+
 #ifdef CONFIG_MMC_MSM_SDIO_SUPPORT
 	.sdiowakeup_irq = MSM_GPIO_TO_INT(66),
-#endif
+#endif /* CONFIG_MMC_MSM_SDIO_SUPPORT */
+
 	.msmsdcc_fmin	= 144000,
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
 	.nonremovable	= 1,
+
 #ifdef CONFIG_MMC_MSM_SDC2_DUMMY52_REQUIRED
 	.dummy52_required = 1,
-#endif
+#endif /* CONFIG_MMC_MSM_SDC2_DUMMY52_REQUIRED */
 };
-#endif
+#endif /* CONFIG_MMC_MSM_SDC2_SUPPORT */
 
 #ifdef CONFIG_MMC_MSM_SDC3_SUPPORT
 static struct mmc_platform_data msm7x2x_sdc3_data = {
@@ -2662,9 +2530,9 @@ static struct mmc_platform_data msm7x2x_sdc3_data = {
 	.nonremovable	= 0,
 #ifdef CONFIG_MMC_MSM_SDC3_DUMMY52_REQUIRED
 	.dummy52_required = 1,
-#endif
+#endif /* CONFIG_MMC_MSM_SDC3_DUMMY52_REQUIRED */
 };
-#endif
+#endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
 
 #ifdef CONFIG_MMC_MSM_SDC4_SUPPORT
 static struct mmc_platform_data msm7x2x_sdc4_data = {
@@ -2675,11 +2543,12 @@ static struct mmc_platform_data msm7x2x_sdc4_data = {
 	.msmsdcc_fmid	= 24576000,
 	.msmsdcc_fmax	= 49152000,
 	.nonremovable	= 0,
+
 #ifdef CONFIG_MMC_MSM_SDC4_DUMMY52_REQUIRED
 	.dummy52_required = 1,
-#endif
+#endif /* CONFIG_MMC_MSM_SDC4_DUMMY52_REQUIRED */
 };
-#endif
+#endif /* CONFIG_MMC_MSM_SDC4_SUPPORT */
 
 static void __init msm7x2x_init_mmc(void)
 {
@@ -2697,7 +2566,7 @@ static void __init msm7x2x_init_mmc(void)
 		msm7x2x_sdc1_data.nonremovable = 0;
 	msm_add_sdcc(1, &msm7x2x_sdc1_data);
 
-#endif
+#endif /* CONFIG_MMC_MSM_SDC1_SUPPORT */
 
 //if (machine_is_msm7x25_surf() || machine_is_msm7x27_surf() ||
 //machine_is_msm7x27_ffa()) {
@@ -2705,21 +2574,28 @@ static void __init msm7x2x_init_mmc(void)
 		if (machine_is_msm7x27_ffa())
 			msm7x2x_sdc2_data.nonremovable = 1;
 		msm_add_sdcc(2, &msm7x2x_sdc2_data);
-#endif
+#endif /* CONFIG_MMC_MSM_SDC2_SUPPORT */
 //}
 
 	if (machine_is_msm7x25_surf() || machine_is_msm7x27_surf()) {
 #ifdef CONFIG_MMC_MSM_SDC3_SUPPORT
 		msm_add_sdcc(3, &msm7x2x_sdc3_data);
-#endif
+#endif /* CONFIG_MMC_MSM_SDC3_SUPPORT */
+
 #ifdef CONFIG_MMC_MSM_SDC4_SUPPORT
 		msm_add_sdcc(4, &msm7x2x_sdc4_data);
-#endif
+#endif /* CONFIG_MMC_MSM_SDC4_SUPPORT */
 	}
 }
+
 #else
+
 #define msm7x2x_init_mmc() do {} while (0)
-#endif
+
+#endif /* (defined(CONFIG_MMC_MSM_SDC1_SUPPORT)\
+	|| defined(CONFIG_MMC_MSM_SDC2_SUPPORT)\
+	|| defined(CONFIG_MMC_MSM_SDC3_SUPPORT)\
+	|| defined(CONFIG_MMC_MSM_SDC4_SUPPORT)) */
 
 
 static struct msm_pm_platform_data msm7x25_pm_data[MSM_PM_SLEEP_MODE_NR] = {
@@ -2810,8 +2686,6 @@ static void __init msm_device_i2c_init(void)
 }
 
 
-#ifdef CONFIG_ZTE_PLATFORM
-
 #define MSM_GPIO_USB3V3	    21 
 static unsigned usb_config_power_on =	GPIO_CFG(MSM_GPIO_USB3V3, 0, 
                                                                                 GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_2MA);
@@ -2838,8 +2712,6 @@ static int init_usb3v3(void)
 	return 0;
 }	
 
-
-#endif 
 
 static void usb_mpp_init(void)
 {
@@ -2888,24 +2760,26 @@ static void __init msm7x2x_init(void)
 {
 	struct proc_dir_entry *entry;
 	
-#ifdef CONFIG_ZTE_FTM_FLAG_SUPPORT
 	zte_ftm_set_value(g_zte_ftm_flag_fixup);
-#endif
 
 /*.	if (socinfo_init() < 0)
 		BUG();*/
+
 #ifdef CONFIG_ARCH_MSM7X25
 	msm_clock_init(msm_clocks_7x25, msm_num_clocks_7x25);
 #elif CONFIG_ARCH_MSM7X27
 	msm_clock_init(msm_clocks_7x27, msm_num_clocks_7x27);
-#endif
+#endif /* CONFIG_ARCH_MSM7X25 */
+
 	/* platform_add_devices(early_devices, ARRAY_SIZE(early_devices)); */
 	platform_add_devices(devices, ARRAY_SIZE(devices));
 	/*sdcc_gpio_init();*/
+
 #if defined(CONFIG_MSM_SERIAL_DEBUGGER)
 	msm_serial_debug_init(MSM_UART3_PHYS, INT_UART3,
 			&msm_device_uart3.dev, 1);
-#endif
+#endif /* defined(CONFIG_MSM_SERIAL_DEBUGGER) */
+	
 	if (machine_is_msm7x25_ffa() || machine_is_msm7x27_ffa()) {
 		smc91x_resources[0].start = 0x98000300;
 		smc91x_resources[0].end = 0x980003ff;
@@ -2926,9 +2800,8 @@ static void __init msm7x2x_init(void)
 		msm7x2x_clock_data.max_axi_khz = 200000;
 
 	msm_acpu_clock_init(&msm7x2x_clock_data);
-#ifdef CONFIG_ZTE_PLATFORM
 	init_usb3v3();
-#endif
+
 #ifdef CONFIG_ARCH_MSM7X27
 	/* Initialize the zero page for barriers and cache ops */
 	map_page_strongly_ordered();
@@ -2952,7 +2825,7 @@ static void __init msm7x2x_init(void)
 	kgsl_pdata.grp2d0_clk_name = NULL;
 	kgsl_pdata.idle_timeout_3d = HZ/5;
 	kgsl_pdata.idle_timeout_2d = 0;
-#endif
+#endif /* CONFIG_ARCH_MSM7X27 */
 
 #ifdef CONFIG_KGSL_PER_PROCESS_PAGE_TABLE
 	kgsl_pdata.pt_va_size = SZ_32M;
@@ -2962,13 +2835,13 @@ static void __init msm7x2x_init(void)
 	kgsl_pdata.pt_va_size = SZ_128M;
 	/* We only ever have one pagetable for everybody */
 	kgsl_pdata.pt_max_count = 1;
-#endif
+#endif /* CONFIG_KGSL_PER_PROCESS_PAGE_TABLE */
 
 #if defined( CONFIG_TOUCHSCREEN_MSM_LEGACY) || defined( CONFIG_TOUCHSCREEN_MSM)
 	msm_device_tssc.dev.platform_data = &msm_tssc_pdata;
-#endif
+#endif /* defined( CONFIG_TOUCHSCREEN_MSM_LEGACY) || defined( CONFIG_TOUCHSCREEN_MSM) */
 
-	usb_mpp_init();
+	/* sb_mpp_init(); */
 
 #ifdef CONFIG_USB_FUNCTION
 	msm_hsusb_pdata.swfi_latency =
@@ -2976,7 +2849,7 @@ static void __init msm7x2x_init(void)
 		[MSM_PM_SLEEP_MODE_RAMP_DOWN_AND_WAIT_FOR_INTERRUPT].latency;
 
 	msm_device_hsusb_peripheral.dev.platform_data = &msm_hsusb_pdata;
-#endif
+#endif /* CONFIG_USB_FUNCTION */
 
 #ifdef CONFIG_USB_MSM_OTG_72K
 	msm_device_otg.dev.platform_data = &msm_otg_pdata;
@@ -3001,15 +2874,19 @@ static void __init msm7x2x_init(void)
 		[MSM_PM_SLEEP_MODE_RAMP_DOWN_AND_WAIT_FOR_INTERRUPT].latency;
 	msm_device_gadget_peripheral.dev.platform_data = &msm_gadget_pdata;
 	msm_gadget_pdata.is_phy_status_timer_on = 1;
-#endif
-#endif
+#endif /* CONFIG_USB_GADGET */
+
+#endif /* CONFIG_USB_MSM_OTG_72K */
+
 	msm_init_pmic_vibrator(); 
 
 
 	platform_add_devices(devices, ARRAY_SIZE(devices));
-#ifdef CONFIG_MSM_CAMERA
+
+#ifdef CONFIG_MSM_CAMERA 
 	config_camera_off_gpios(); /* might not be necessary */
-#endif
+#endif /* CONFIG_MSM_CAMERA */
+
 	msm_device_i2c_init();
 	i2c_register_board_info(0, i2c_devices, ARRAY_SIZE(i2c_devices));
 
@@ -3022,17 +2899,16 @@ static void __init msm7x2x_init(void)
 		platform_device_register(&keypad_device_7k_ffa);
 	else
 		platform_device_register(&keypad_device_surf);
-#endif
+#endif /* CONFIG_SURF_FFA_GPIO_KEYPAD */
 
-#if defined(CONFIG_MACH_BLADE) ||defined(CONFIG_MACH_MOONCAKE)
 	lcdc_lead_gpio_init();
-#else
-	lcdc_gordon_gpio_init();
-#endif
+	
 	msm_fb_add_devices();
+
 #ifdef CONFIG_USB_EHCI_MSM
 	msm7x2x_init_host();
-#endif
+#endif /* CONFIG_USB_EHCI_MSM */
+
 	msm7x2x_init_mmc();
 	bt_power_init();
 
@@ -3103,14 +2979,10 @@ static void __init msm_msm7x2x_allocate_memory_regions(void)
 	void *addr;
 	unsigned long size;
 
-#if defined(CONFIG_ZTE_PLATFORM) && defined(CONFIG_F3_LOG)
-
     unsigned int len;
     smem_global *global_tmp = (smem_global *)(MSM_RAM_LOG_BASE + PAGE_SIZE) ;
 
     len = global_tmp->f3log;
-
-#endif
 
 	size = pmem_mdp_size;
 	if (size) {
@@ -3162,9 +3034,7 @@ static void __init msm_msm7x2x_allocate_memory_regions(void)
 	pr_info("allocating %lu bytes (at %lx physical) for KGSL\n",
 		size , MSM_GPU_PHYS_START_ADDR);
 
-#endif
-
-#if defined(CONFIG_ZTE_PLATFORM) && defined(CONFIG_F3_LOG)
+#endif /* CONFIG_ARCH_MSM7X27 */
 
 	pr_info("length = %d ++ \n", len);
 
@@ -3181,7 +3051,6 @@ static void __init msm_msm7x2x_allocate_memory_regions(void)
 
 	addr = phys_to_virt(0x08D00000);
 	pr_info("allocating %lu M at %p (%lx physical) for F3\n",size, addr, __pa(addr));
-#endif 
 
 }
 
@@ -3208,10 +3077,8 @@ static void __init msm7x2x_map_io(void)
 			/* R/W latency: 3 cycles; */
 			l2x0_init(MSM_L2CC_BASE, 0x00068012, 0xfe000000);
 	}
-#endif
+#endif /* CONFIG_CACHE_L2X0 */
 }
-
-#ifdef CONFIG_ZTE_PLATFORM
 
 #define ATAG_ZTEFTM 0x5d53cd73
 static int  parse_tag_zteftm(const struct tag *tags)
@@ -3247,13 +3114,12 @@ int get_ftm_from_tag(void)
 }
 EXPORT_SYMBOL(get_ftm_from_tag);
 
-#endif
 
 MACHINE_START(MSM7X27_SURF, "QCT MSM7x27 SURF")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
@@ -3265,7 +3131,7 @@ MACHINE_START(MSM7X27_FFA, "QCT MSM7x27 FFA")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
@@ -3277,7 +3143,7 @@ MACHINE_START(MSM7X25_SURF, "QCT MSM7x25 SURF")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
@@ -3289,7 +3155,7 @@ MACHINE_START(MSM7X25_FFA, "QCT MSM7x25 FFA")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
@@ -3301,11 +3167,9 @@ MACHINE_START(BLADE, "blade ZTE handset")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
-#ifdef CONFIG_ZTE_PLATFORM
-        .fixup          = zte_fixup,
-#endif
+	.fixup          = zte_fixup,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
 	.init_machine	= msm7x2x_init,
@@ -3316,11 +3180,9 @@ MACHINE_START(MOONCAKE, "mooncake ZTE handset")
 #ifdef CONFIG_MSM_DEBUG_UART
 	.phys_io        = MSM_DEBUG_UART_PHYS,
 	.io_pg_offst    = ((MSM_DEBUG_UART_BASE) >> 18) & 0xfffc,
-#endif
+#endif /* CONFIG_MSM_DEBUG_UART */
 	.boot_params	= PHYS_OFFSET + 0x100,
-#ifdef CONFIG_ZTE_PLATFORM
-        .fixup          = zte_fixup,
-#endif
+	.fixup          = zte_fixup,
 	.map_io		= msm7x2x_map_io,
 	.init_irq	= msm7x2x_init_irq,
 	.init_machine	= msm7x2x_init,
