@@ -26,6 +26,9 @@
 *.bin
 *.gz
 *.builtin
+arch/arm/boot/compressed/piggy.gzip
+include/generated/*
+testing/*
 
 #
 # Top-level generic files
