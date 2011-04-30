@@ -1088,24 +1088,20 @@ static struct i2c_board_info i2c_devices[] = {
 
 #ifdef CONFIG_MT9T11X
     
-#if !defined(CONFIG_SENSOR_ADAPTER)
+#if defined(CONFIG_SENSOR_ADAPTER)
     {
         I2C_BOARD_INFO("mt9t11x", 0x7A >> 1),
     },
-#else
-    //Do nothing
 #endif
 #endif /* CONFIG_MT9T11X */
 
 #ifdef CONFIG_OV5642
     
-#if !defined(CONFIG_SENSOR_ADAPTER)
+#if defined(CONFIG_SENSOR_ADAPTER)
     {
         I2C_BOARD_INFO("ov5642", 0x78 >> 1),
     },
-#else
-    //Do nothing
-#endif
+#endif	
 #endif /* CONFIG_OV5642 */
 
 #ifdef CONFIG_TOUCHSCREEN_SYNAPTICS_I2C_RMI
@@ -1488,160 +1484,6 @@ int32_t msm_camera_power_backend(enum msm_camera_pwr_mode_t pwr_mode)
     return 0;
 }
 
-/*
- * Commented by zh.shj
- *
- * Camera power setting for frontend sensor, i.e., MT9V113
- * For MT9V113: 0.3Mp, 1/11-Inch System-On-A-Chip (SOC) CMOS Digital Image Sensor
- */
-#define MSM_CAMERA_POWER_FRONTEND_DVDD_VAL       (1800)
-#define MSM_CAMERA_POWER_FRONTEND_IOVDD_VAL      (2800)
-#define MSM_CAMERA_POWER_FRONTEND_AVDD_VAL       (2600)
-int32_t msm_camera_power_frontend(enum msm_camera_pwr_mode_t pwr_mode)
-{
-    struct vreg *vreg_cam_dvdd  = NULL;
-    struct vreg *vreg_cam_avdd  = NULL;
-    struct vreg *vreg_cam_iovdd = NULL;
-    int32_t rc_cam_dvdd, rc_cam_avdd, rc_cam_iovdd;
-
-    CDBG("%s: entry\n", __func__);
-
-    /*
-      * Power-up Sequence according to datasheet of sensor:
-      *
-      * VREG_CAM_DVDD1V8 = VREG_GP2
-      * VREG_CAM30_2V8   = VREG_GP4
-      * VREG_CAM_AVDD2V6 = VREG_GP3
-      */
-    vreg_cam_dvdd  = vreg_get(0, "gp2");
-    vreg_cam_iovdd = vreg_get(0, "gp4");
-    vreg_cam_avdd  = vreg_get(0, "gp3");
-    if ((!vreg_cam_dvdd) || (!vreg_cam_iovdd) || (!vreg_cam_avdd))
-    {
-        CCRT("%s: vreg_get failed!\n", __func__);
-        return -EIO;
-    }
-
-    switch (pwr_mode)
-    {
-        case MSM_CAMERA_PWRUP_MODE:
-        {
-            rc_cam_dvdd = vreg_set_level(vreg_cam_dvdd, MSM_CAMERA_POWER_FRONTEND_DVDD_VAL);
-            if (rc_cam_dvdd)
-            {
-                CCRT("%s: vreg_set_level failed!\n", __func__);
-                return -EIO;
-            }
-
-            rc_cam_dvdd = vreg_enable(vreg_cam_dvdd);
-            if (rc_cam_dvdd)
-            {
-                CCRT("%s: vreg_enable failed!\n", __func__);
-                return -EIO;
-            }
-
-            mdelay(1);
-
-            rc_cam_iovdd = vreg_set_level(vreg_cam_iovdd, MSM_CAMERA_POWER_FRONTEND_IOVDD_VAL);
-            if (rc_cam_iovdd)
-            {
-                CCRT("%s: vreg_set_level failed!\n", __func__);
-                return -EIO;
-            }
-
-            rc_cam_iovdd = vreg_enable(vreg_cam_iovdd);
-            if (rc_cam_iovdd)
-            {
-                CCRT("%s: vreg_enable failed!\n", __func__);
-                return -EIO;
-            }
-
-            mdelay(2);
-
-            rc_cam_avdd = vreg_set_level(vreg_cam_avdd, MSM_CAMERA_POWER_FRONTEND_AVDD_VAL);
-            if (rc_cam_avdd)
-            {
-                CCRT("%s: vreg_set_level failed!\n", __func__);
-                return -EIO;
-            }
-
-            rc_cam_avdd = vreg_enable(vreg_cam_avdd);
-            if (rc_cam_avdd)
-            {
-                CCRT("%s: vreg_enable failed!\n", __func__);
-                return -EIO;
-            }
-
-            mdelay(500);
-
-            break;
-        }
-        case MSM_CAMERA_STANDBY_MODE:
-        {
-            CCRT("%s: MSM_CAMERA_STANDBY_MODE not supported!\n", __func__);
-            return -EIO;
-        }
-        case MSM_CAMERA_NORMAL_MODE:
-        {
-            CCRT("%s: MSM_CAMERA_NORMAL_MODE not supported!\n", __func__);
-            return -EIO;
-        }
-        case MSM_CAMERA_PWRDWN_MODE:
-        {
-            rc_cam_dvdd  = vreg_disable(vreg_cam_dvdd);
-            rc_cam_iovdd = vreg_disable(vreg_cam_iovdd);
-            rc_cam_avdd  = vreg_disable(vreg_cam_avdd);
-            if ((rc_cam_dvdd) || (rc_cam_iovdd) || (rc_cam_avdd))
-            {
-                CCRT("%s: vreg_disable failed!\n", __func__);
-                return -EIO;
-            }
-
-            break;
-        }
-        default:
-        {
-            CCRT("%s: parameter not supported!\n", __func__);
-            return -EIO;
-        }
-    }
-
-    return 0;
-}
-
-/*
- * Commented by zh.shj
- *
- * Camera clock switch for both frontend and backend sensors, i.e., MT9V113 and MT9P111
- *
- * For MT9V113: 0.3Mp, 1/11-Inch System-On-A-Chip (SOC) CMOS Digital Image Sensor
- * For MT9P111: 5.0Mp, 1/4-Inch System-On-A-Chip (SOC) CMOS Digital Image Sensor
- *
- * switch_val: 0, to switch clock to frontend sensor, i.e., MT9V113, or
- *             1, to switch clock to backend sensor, i.e., MT9P111
- */
-int msm_camera_clk_switch(const struct msm_camera_sensor_info *data,
-                                  uint32_t gpio_switch,
-                                  uint32_t switch_val)
-{
-    int rc;
-
-    CDBG("%s: entry\n", __func__);
-
-    rc = gpio_request(gpio_switch, data->sensor_name);
-    if (0 == rc)
-    {
-        
-        rc = gpio_direction_output(gpio_switch, switch_val);
-
-        
-        mdelay(1);
-    }
-
-    gpio_free(gpio_switch);
-
-    return rc;
-}
 
 static struct msm_camera_device_platform_data msm_camera_device_data = {
 	.camera_gpio_on  = config_camera_on_gpios,
